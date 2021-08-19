@@ -1,10 +1,11 @@
 import 'dart:convert';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 
-import 'secrets.dart';
-
 class Translator {
+  static const String _DAK_KEY = 'DEEPL_AUTH_KEY';
+
   static Future<TranslationResponse> translate(
       TranslationRequest transReq) async {
     Uri url = Uri.https('api-free.deepl.com', '/v2/translate', {
@@ -14,7 +15,7 @@ class Translator {
     });
     Response res = await get(url, headers: {
       'Accept': 'application/json',
-      'Authorization': Secrets.deeplAuthKey,
+      'Authorization': dotenv.env[_DAK_KEY] ?? '',
     });
     Map<String, dynamic> json = jsonDecode(utf8.decode(res.bodyBytes));
     if (res.statusCode == 200) {

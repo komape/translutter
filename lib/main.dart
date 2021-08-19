@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:share/share.dart';
 import 'package:translutter/lang.dart';
 import 'package:translutter/lang_reminder.dart';
@@ -7,7 +8,8 @@ import 'package:translutter/select_lang_view.dart';
 
 import 'translator.dart';
 
-void main() {
+void main() async {
+  await dotenv.load();
   runApp(TranslutterApp());
 }
 
