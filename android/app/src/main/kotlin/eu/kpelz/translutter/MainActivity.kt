@@ -1,4 +1,4 @@
-package com.example.translutter
+package eu.kpelz.translutter
 
 import io.flutter.embedding.android.FlutterActivity
 
