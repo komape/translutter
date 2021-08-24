@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:share/share.dart';
-import 'package:translutter/lang.dart';
-import 'package:translutter/lang_reminder.dart';
-import 'package:translutter/select_lang_view.dart';
 
+import 'lang.dart';
+import 'lang_reminder.dart';
+import 'select_lang_view.dart';
 import 'translator.dart';
 
 void main() async {
@@ -63,7 +63,7 @@ class _HomeViewState extends State<HomeView> {
   }
 
   void translateDelayed() {
-    _delayedTranslation = Future<void>.delayed(Duration(seconds: 2), translate);
+    _delayedTranslation = Future<void>.delayed(Duration(seconds: 3), translate);
   }
 
   void selectLang(bool isSource) async {
@@ -111,6 +111,7 @@ class _HomeViewState extends State<HomeView> {
       _targetLang = newTargetLang;
     });
     if (_translatedText != '') {
+      _controller.text = _translatedText;
       translate();
     }
     LangReminder.setSourceLang(newSourceLang);
@@ -142,115 +143,134 @@ class _HomeViewState extends State<HomeView> {
     });
   }
 
+  void closeKeyboard() {
+    FocusScopeNode currentFocus = FocusScope.of(context);
+    if (!currentFocus.hasPrimaryFocus) {
+      currentFocus.unfocus();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(30),
+    return GestureDetector(
+      onTap: closeKeyboard,
+      child: Scaffold(
+        appBar: AppBar(
+          brightness: Brightness.dark,
+          toolbarHeight: 80,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(30),
+            ),
           ),
-        ),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            TextButton(
-              onPressed: () => selectLang(true),
-              child: Text(
-                _sourceLang.name,
-                style: Theme.of(context)
-                    .textTheme
-                    .subtitle1!
-                    .apply(color: Colors.white),
-              ),
-            ),
-            IconButton(
-              // can't switch languages if the source language must be detected first
-              onPressed: _sourceLang.code == '' ? null : () => switchLangs(),
-              icon: Icon(Icons.swap_horiz),
-              disabledColor: Colors.white,
-            ),
-            TextButton(
-                onPressed: () => selectLang(false),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextButton(
+                onPressed: () => selectLang(true),
                 child: Text(
-                  _targetLang.name,
+                  _sourceLang.name,
                   style: Theme.of(context)
                       .textTheme
                       .subtitle1!
                       .apply(color: Colors.white),
-                )),
-          ],
-        ),
-      ),
-      body: Center(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.grey.shade200,
-            ),
-            margin: const EdgeInsets.fromLTRB(12, 16, 12, 0),
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              maxLengthEnforcement: MaxLengthEnforcement.enforced,
-              controller: _controller,
-              textInputAction: TextInputAction.go,
-              maxLength: 5000,
-              onEditingComplete: translate,
-              minLines: 5,
-              maxLines: 12,
-              cursorColor: Colors.black,
-              decoration: InputDecoration(
-                contentPadding: EdgeInsets.all(12),
-                fillColor: Colors.white,
-                border: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                hintText: 'Enter or paste text here',
-              ),
-              style: Theme.of(context).textTheme.bodyText2,
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.grey.shade200,
-            ),
-            margin: const EdgeInsets.fromLTRB(12, 16, 12, 0),
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(12),
-                  child: _translatedText == ''
-                      ? Text(
-                          'Translated text will appear here',
-                          textAlign: TextAlign.start,
-                          style: TextStyle(color: Colors.grey.shade700),
-                        )
-                      : Text(
-                          _translatedText,
-                          textAlign: TextAlign.start,
-                        ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      onPressed: () => Share.share(_translatedText),
-                      icon: Icon(Icons.ios_share),
+              ),
+              IconButton(
+                // can't switch languages if the source language must be detected first
+                onPressed: _sourceLang.code == '' ? null : () => switchLangs(),
+                icon: Icon(Icons.swap_horiz),
+                disabledColor: Colors.white,
+              ),
+              TextButton(
+                  onPressed: () => selectLang(false),
+                  child: Text(
+                    _targetLang.name,
+                    style: Theme.of(context)
+                        .textTheme
+                        .subtitle1!
+                        .apply(color: Colors.white),
+                  )),
+            ],
+          ),
+        ),
+        body: Center(
+          child: ListView(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.grey.shade200,
+                ),
+                margin: const EdgeInsets.fromLTRB(12, 16, 12, 0),
+                padding: const EdgeInsets.all(12),
+                child: TextField(
+                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                  controller: _controller,
+                  maxLength: 5000,
+                  onEditingComplete: translate,
+                  minLines: 5,
+                  maxLines: 12,
+                  cursorColor: Colors.black,
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                    fillColor: Colors.white,
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    hintText: 'Enter or paste text here',
+                    suffix: IconButton(
+                      onPressed: () => _controller.clear(),
+                      icon: Icon(Icons.clear),
+                      alignment: Alignment.topRight,
+                      padding: EdgeInsets.fromLTRB(8, 12, 0, 8),
                     ),
-                    IconButton(
-                      onPressed: () => Clipboard.setData(
-                          ClipboardData(text: _translatedText)),
-                      icon: Icon(Icons.copy),
+                  ),
+                  style: Theme.of(context).textTheme.bodyText2,
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.grey.shade200,
+                ),
+                margin: const EdgeInsets.fromLTRB(12, 16, 12, 16),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(12),
+                      child: _translatedText == ''
+                          ? Text(
+                              'Translated text will appear here',
+                              textAlign: TextAlign.start,
+                              style: TextStyle(color: Colors.grey.shade700),
+                            )
+                          : Text(
+                              _translatedText,
+                              textAlign: TextAlign.start,
+                            ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          onPressed: () => Share.share(_translatedText),
+                          icon: Icon(Icons.ios_share),
+                        ),
+                        IconButton(
+                          onPressed: () => Clipboard.setData(
+                              ClipboardData(text: _translatedText)),
+                          icon: Icon(Icons.copy),
+                        ),
+                      ],
                     ),
                   ],
-                )
-              ],
-            ),
+                ),
+              ),
+            ],
           ),
-        ]),
+        ),
       ),
     );
   }
